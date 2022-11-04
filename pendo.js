@@ -16,7 +16,7 @@
                 email:            'user_001@pendo.io',  // Recommended if using Pendo Feedback, or NPS Email
                 first_name:       'Logan',  // Recommended if using Pendo Feedback
                 last_name:        'James',
-                role:             'Bug Tester'// Optional
+                Role:             'Bug Tester'// Optional
 
                 // You can add any additional visitor level key-values here,
                 // as long as it's not one of the above reserved names.
