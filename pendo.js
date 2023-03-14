@@ -37,5 +37,10 @@
                 // as long as it's not one of the above reserved names.
             }
         });
+     pendo.updateOptions({
+                visitor: {
+                    middle_name: "Buggy",
+                },
+            });
 })('ac7440ad-cbff-4116-56c1-a8bacb3f9f45');
 </script>
