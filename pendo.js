@@ -42,5 +42,6 @@
                     middle_name: "Buggy",
                 },
             });
-})('ac7440ad-cbff-4116-56c1-a8bacb3f9f45');
+})('e378fb3e-2f44-4676-5c4e-8fe582b4a78f');    // EU app
+  //})('ac7440ad-cbff-4116-56c1-a8bacb3f9f45');     SB admin
 </script>
