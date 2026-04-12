@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Env
+.env
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# rekordbox DB (never commit)
+master.db
+*.nml
