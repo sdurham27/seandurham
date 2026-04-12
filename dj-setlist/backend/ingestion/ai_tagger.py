@@ -12,7 +12,9 @@ Output schema per track:
   energy_level: int 1–10
   mood:         string    e.g. "euphoric"
   best_for:     string[]  e.g. ["closing set", "peak hour"]
-  vetted:       bool      false if play_count==0 and rating==0
+  vetted:       bool      true if Spotify matched the track (spotify_matched=true),
+                          meaning it's a known catalogued release rather than an
+                          unidentifiable file (bootleg/edit with wrong metadata etc.)
 
 Usage:
     python -m ingestion.ai_tagger
@@ -51,7 +53,6 @@ Required fields:
   "mood":         single lowercase string (e.g. "euphoric", "melancholy", "groovy")
   "best_for":     array of 1–3 context strings from: ["warmup", "peak hour", "closing set",
                   "after hours", "daytime", "sunrise", "crowd builder", "dancefloor filler"]
-  "vetted":       boolean — true if the track has plays OR a star rating, false otherwise
 """
 
 
@@ -150,7 +151,10 @@ def tag(chunk: int = 50, offset: int = 0) -> None:
             energy_level = max(1, min(10, int(result.get("energy_level", 5))))
             mood = str(result.get("mood", "unknown"))
             best_for = result.get("best_for", [])
-            vetted = bool(result.get("vetted", track.get("play_count", 0) > 0 or track.get("rating", 0) > 0))
+            # vetted = Spotify was able to identify this track.
+            # Unvetted tracks are those Spotify couldn't find — likely bootlegs,
+            # edits with wrong metadata, or unreleased files.
+            vetted = bool(features and features.get("matched"))
 
             rows_to_insert.append({
                 "track_id": track["id"],

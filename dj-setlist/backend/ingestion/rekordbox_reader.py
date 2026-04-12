@@ -19,6 +19,59 @@ from typing import Iterator, Optional
 
 
 # ---------------------------------------------------------------------------
+# Title / artist normalisation
+# ---------------------------------------------------------------------------
+
+# Matches common "Artist - Title" separators (hyphen, en-dash, em-dash)
+_TITLE_SEP_RE = re.compile(r'\s+[-–—]\s+')
+
+# Matches feat./ft./featuring suffixes inside title or artist strings
+_FEAT_RE = re.compile(
+    r'\s*[\(\[]?(?:feat\.?|ft\.?|featuring)\s+[^\)\]]+[\)\]]?',
+    re.IGNORECASE,
+)
+
+
+def _parse_artist_title(raw_title: str, raw_artist: str) -> tuple[str, str]:
+    """
+    Normalise title and artist fields from rekordbox metadata.
+
+    Handles cases where:
+    - The artist is embedded in the title as "Artist - Track Title"
+    - The title contains feat./ft. guest artist info
+    - Artist field is duplicated in the title ("Artist - Track", artist="Artist")
+
+    Returns (clean_title, clean_artist). Does NOT split multi-artist strings —
+    those are preserved as-is for Spotify search to handle.
+    """
+    title = raw_title.strip()
+    artist = raw_artist.strip()
+
+    # Case 1: artist field is blank and title contains "Something - Something"
+    # → treat left side as artist, right side as title
+    if not artist and _TITLE_SEP_RE.search(title):
+        parts = _TITLE_SEP_RE.split(title, maxsplit=1)
+        if len(parts) == 2:
+            artist = parts[0].strip()
+            title = parts[1].strip()
+
+    # Case 2: artist IS set but the title also starts with the artist name
+    # e.g. title="DJ Koze - Track Name", artist="DJ Koze"
+    # Strip the leading "Artist - " prefix from the title
+    elif artist and _TITLE_SEP_RE.search(title):
+        parts = _TITLE_SEP_RE.split(title, maxsplit=1)
+        if len(parts) == 2:
+            left = parts[0].strip()
+            # Only strip if the left segment matches the artist (or is contained in it)
+            if (left.lower() == artist.lower()
+                    or left.lower() in artist.lower()
+                    or artist.lower() in left.lower()):
+                title = parts[1].strip()
+
+    return title, artist
+
+
+# ---------------------------------------------------------------------------
 # Camelot wheel conversion
 # ---------------------------------------------------------------------------
 
@@ -219,8 +272,10 @@ def read_via_pyrekordbox(db_path: Optional[str] = None) -> list[Track]:
             if raw_date:
                 date_added = str(raw_date)[:10]  # keep YYYY-MM-DD
 
+            title, artist_name = _parse_artist_title(content.Title or "", artist_name)
+
             tracks.append(Track(
-                title=content.Title or "",
+                title=title,
                 artist=artist_name,
                 album=album_name,
                 genre=genre_name,
@@ -271,9 +326,13 @@ def read_via_xml(xml_path: str) -> list[Track]:
         if date_added:
             date_added = date_added[:10]
 
+        raw_title = elem.get("Name", "")
+        raw_artist = elem.get("Artist", "")
+        title, artist = _parse_artist_title(raw_title, raw_artist)
+
         tracks.append(Track(
-            title=elem.get("Name", ""),
-            artist=elem.get("Artist", ""),
+            title=title,
+            artist=artist,
             album=elem.get("Album", ""),
             genre=elem.get("Genre", ""),
             bpm=bpm_val,

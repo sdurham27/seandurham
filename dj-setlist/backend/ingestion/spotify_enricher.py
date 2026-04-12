@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -28,6 +29,78 @@ from typing import Optional
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+
+# ---------------------------------------------------------------------------
+# Title / artist parsing helpers
+# ---------------------------------------------------------------------------
+
+# Remix / edit / version suffixes in parentheses or brackets
+_REMIX_RE = re.compile(
+    r'\s*[\(\[]\s*[^\(\)\[\]]*?'
+    r'(?:remix|rmx|mix|edit|rework|bootleg|mashup|flip|version|vip|dub|'
+    r'instrumental|extended|radio\s+edit|original\s+mix|club\s+mix)'
+    r'[^\(\)\[\]]*[\)\]]',
+    re.IGNORECASE,
+)
+
+# feat./ft./featuring suffixes (inside or outside brackets)
+_FEAT_RE = re.compile(
+    r'\s*[\(\[]?(?:feat\.?|ft\.?|featuring)\s+[^\)\]]+[\)\]]?',
+    re.IGNORECASE,
+)
+
+# Multi-artist separators in the artist field
+_MULTI_ARTIST_RE = re.compile(
+    r'\s*(?:feat\.?|ft\.?|featuring|&|,|vs\.?|\bx\b|w/)\s*',
+    re.IGNORECASE,
+)
+
+# "Artist - Title" or "Artist – Title" separator embedded in the title field
+_TITLE_SEP_RE = re.compile(r'\s+[-–—]\s+')
+
+
+def _clean_title(title: str) -> str:
+    """Strip remix/feat suffixes to get a bare track name for searching."""
+    cleaned = _REMIX_RE.sub('', title)
+    cleaned = _FEAT_RE.sub('', cleaned)
+    return cleaned.strip() or title.strip()
+
+
+def _primary_artist(artist: str) -> str:
+    """Return only the first artist from a multi-artist / feat. string."""
+    parts = _MULTI_ARTIST_RE.split(artist, maxsplit=1)
+    return parts[0].strip()
+
+
+def _extract_from_title(title: str) -> tuple[str, str]:
+    """
+    If title looks like "Artist - Track", extract and return (track, artist).
+    Returns ("", "") if the pattern is not detected.
+    """
+    parts = _TITLE_SEP_RE.split(title, maxsplit=1)
+    if len(parts) == 2:
+        return parts[1].strip(), parts[0].strip()  # (title, artist)
+    return "", ""
+
+
+def _score_match(item: dict, want_title: str, want_artist: str) -> float:
+    """
+    Rough 0–1 similarity between a Spotify result and our target.
+    Weights title more heavily than artist.
+    """
+    item_title = item.get("name", "").lower()
+    item_artists = " ".join(a["name"] for a in item.get("artists", [])).lower()
+    t_words = [w for w in want_title.lower().split() if len(w) > 2]
+    a_words = [w for w in want_artist.lower().split() if len(w) > 2]
+
+    t_hits = sum(1 for w in t_words if w in item_title)
+    a_hits = sum(1 for w in a_words if w in item_artists)
+
+    t_score = (t_hits / len(t_words)) if t_words else 0.0
+    a_score = (a_hits / len(a_words)) if a_words else 0.5  # unknown artist = neutral
+
+    return 0.65 * t_score + 0.35 * a_score
 
 
 # ---------------------------------------------------------------------------
@@ -41,38 +114,78 @@ def _build_spotify(client_id: str, client_secret: str):
     return spotipy.Spotify(auth_manager=auth, requests_timeout=10, retries=3)
 
 
+def _run_query(sp, query: str) -> Optional[dict]:
+    """Execute a single Spotify search query, return top item or None."""
+    try:
+        results = sp.search(q=query, type="track", limit=3)
+        items = results.get("tracks", {}).get("items", [])
+        return items[0] if items else None
+    except Exception as exc:
+        print(f"  [spotify] query error ({query!r}): {exc}")
+        return None
+
+
 def _search_track(sp, title: str, artist: str) -> Optional[dict]:
     """
-    Search Spotify for the best matching track.
-    Returns a dict with {spotify_id, name, artist} or None if no match.
+    Multi-strategy Spotify search with progressive fallback.
+
+    Strategy order:
+    1. Cleaned title + primary artist  (most common case)
+    2. Original title + primary artist (if cleaning changed something)
+    3. Artist extracted from title + cleaned track name  (embedded "Artist - Title")
+    4. Cleaned title only  (when artist name differs significantly)
+    5. Original title only (last resort)
+
+    Picks the highest-scoring result across all attempts.
+    Returns {spotify_id, name, artist} or None.
     """
-    query = f"track:{title} artist:{artist}"
-    try:
-        results = sp.search(q=query, type="track", limit=1)
-    except Exception as exc:
-        print(f"  [spotify] search error for '{title}' by '{artist}': {exc}")
-        return None
+    clean_t = _clean_title(title)
+    primary_a = _primary_artist(artist)
 
-    items = results.get("tracks", {}).get("items", [])
-    if not items:
-        # Retry with just title (artist name sometimes differs)
-        try:
-            results = sp.search(q=f"track:{title}", type="track", limit=3)
-            items = results.get("tracks", {}).get("items", [])
-        except Exception:
-            return None
-        if not items:
-            return None
-        # Pick closest artist match
-        artist_lower = artist.lower()
-        for item in items:
-            item_artists = " ".join(a["name"] for a in item["artists"]).lower()
-            if any(word in item_artists for word in artist_lower.split()):
-                return {"spotify_id": item["id"], "name": item["name"], "artist": item["artists"][0]["name"]}
-        return None
+    # Try to detect artist embedded inside the title field
+    emb_title, emb_artist = _extract_from_title(title)
+    clean_emb_t = _clean_title(emb_title) if emb_title else ""
 
-    item = items[0]
-    return {"spotify_id": item["id"], "name": item["name"], "artist": item["artists"][0]["name"]}
+    # Build ordered strategy list, deduplicating identical queries
+    strategies: list[tuple[str, str, str]] = []  # (query, ref_title, ref_artist)
+
+    def _add(q: str, ref_t: str, ref_a: str) -> None:
+        if q and q not in {s[0] for s in strategies}:
+            strategies.append((q, ref_t, ref_a))
+
+    if clean_t and primary_a:
+        _add(f'track:"{clean_t}" artist:"{primary_a}"', clean_t, primary_a)
+    if title != clean_t and primary_a:
+        _add(f'track:"{title}" artist:"{primary_a}"', title, primary_a)
+    if emb_title and emb_artist:
+        _add(f'track:"{clean_emb_t or emb_title}" artist:"{emb_artist}"', clean_emb_t or emb_title, emb_artist)
+    if clean_t:
+        _add(f'track:"{clean_t}"', clean_t, artist)
+    if title != clean_t:
+        _add(f'track:"{title}"', title, artist)
+
+    best_item: Optional[dict] = None
+    best_score = 0.0
+
+    for query, ref_t, ref_a in strategies:
+        item = _run_query(sp, query)
+        time.sleep(0.05)
+        if not item:
+            continue
+        score = _score_match(item, ref_t, ref_a)
+        if score > best_score:
+            best_score = score
+            best_item = item
+        if best_score >= 0.85:
+            break  # good enough, stop early
+
+    if best_item and best_score >= 0.35:
+        return {
+            "spotify_id": best_item["id"],
+            "name": best_item["name"],
+            "artist": best_item["artists"][0]["name"],
+        }
+    return None
 
 
 def _get_audio_features_batch(sp, spotify_ids: list[str]) -> dict[str, dict]:
@@ -108,7 +221,7 @@ def _fetch_unenriched_tracks(sb, limit: Optional[int]) -> list[dict]:
     enriched_resp = sb.table("track_features").select("track_id").execute()
     enriched_ids = {row["track_id"] for row in enriched_resp.data}
 
-    q = sb.table("tracks").select("id,title,artist")
+    q = sb.table("tracks").select("id,title,artist,file_path")
     if limit:
         q = q.limit(limit)
     resp = q.execute()
@@ -141,7 +254,18 @@ def enrich(limit: Optional[int] = None) -> None:
     unmatched: list[str] = []   # track_ids with no Spotify match
 
     for idx, track in enumerate(tracks):
-        result = _search_track(sp, track["title"], track["artist"])
+        # If artist field is blank, try to get it from the file name
+        # e.g. "04 - Track Name.mp3" → strip track number and extension
+        artist = track["artist"] or ""
+        if not artist and track.get("file_path"):
+            stem = Path(track["file_path"]).stem
+            # Remove leading track numbers like "01 - " or "01. "
+            stem = re.sub(r'^\d+[\s\-\.]+', '', stem).strip()
+            # If stem still has " - ", treat left part as artist
+            if ' - ' in stem:
+                artist = stem.split(' - ', 1)[0].strip()
+
+        result = _search_track(sp, track["title"], artist)
         if result:
             matched.append({"track_id": track["id"], "spotify_id": result["spotify_id"]})
         else:

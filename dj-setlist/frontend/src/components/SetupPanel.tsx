@@ -63,7 +63,7 @@ export function SetupPanel({ form, onChange, onGenerate, loading }: Props) {
       <div className="toggle-row">
         <div>
           <div className="toggle-label">Include unvetted tracks</div>
-          <div className="toggle-desc">Tracks with 0 plays &amp; no rating</div>
+          <div className="toggle-desc">Tracks Spotify couldn't identify</div>
         </div>
         <label className="toggle">
           <input
