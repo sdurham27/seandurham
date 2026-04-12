@@ -9,7 +9,9 @@ create index if not exists track_features_sc_id_idx
   on track_features(soundcloud_id);
 
 -- Regenerate the enriched_tracks view to include the new columns
-create or replace view enriched_tracks as
+-- Must drop first — Postgres won't let CREATE OR REPLACE change column order
+drop view if exists enriched_tracks;
+create view enriched_tracks as
 select
   t.*,
   tf.spotify_id,
