@@ -188,9 +188,7 @@ async def generate_setlist(req: SetlistRequest):
             "vibe_tags": v.get("vibe_tags", []),
             "best_for": v.get("best_for", []),
             "vetted": v.get("vetted", True),
-            "valence": f.get("valence"),
-            "energy": f.get("energy"),
-            "danceability": f.get("danceability"),
+            "soundcloud_verified": bool(f.get("soundcloud_matched")),
         }
 
     summaries = [_candidate_summary(t) for t in candidates]
@@ -259,8 +257,7 @@ Candidate tracks (JSON):
                 "vibe_tags": v.get("vibe_tags", []),
                 "best_for": v.get("best_for", []),
                 "vetted": v.get("vetted", True),
-                "valence": f.get("valence"),
-                "energy": f.get("energy"),
+                "soundcloud_verified": bool(f.get("soundcloud_matched")),
                 "reason": item.get("reason", ""),
             })
 

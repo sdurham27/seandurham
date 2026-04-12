@@ -12,9 +12,9 @@ Output schema per track:
   energy_level: int 1–10
   mood:         string    e.g. "euphoric"
   best_for:     string[]  e.g. ["closing set", "peak hour"]
-  vetted:       bool      true if Spotify OR SoundCloud matched the track,
-                          meaning it's an identifiable release. False = neither
-                          service found it (likely bootleg/edit/wrong metadata).
+  vetted:       bool      true if SoundCloud matched the track (soundcloud_matched=true),
+                          meaning it's an identifiable release. False = SC couldn't
+                          find it (likely a bootleg, edit with wrong metadata, etc.).
 
 Usage:
     python -m ingestion.ai_tagger
@@ -67,15 +67,8 @@ def _build_user_message(track: dict, features: Optional[dict]) -> str:
         f"Play count: {track.get('play_count', 0)}",
         f"Star rating: {track.get('rating', 0)}/5",
     ]
-    if features and features.get("matched"):
-        parts += [
-            f"Valence (happiness): {features.get('valence', 'N/A')}",
-            f"Energy: {features.get('energy', 'N/A')}",
-            f"Danceability: {features.get('danceability', 'N/A')}",
-            f"Acousticness: {features.get('acousticness', 'N/A')}",
-            f"Instrumentalness: {features.get('instrumentalness', 'N/A')}",
-            f"Spotify tempo: {features.get('tempo', 'N/A')}",
-        ]
+    if features and features.get("soundcloud_matched"):
+        parts.append("SoundCloud: verified (track found in SC catalog)")
     return "\n".join(parts)
 
 
@@ -151,12 +144,9 @@ def tag(chunk: int = 50, offset: int = 0) -> None:
             energy_level = max(1, min(10, int(result.get("energy_level", 5))))
             mood = str(result.get("mood", "unknown"))
             best_for = result.get("best_for", [])
-            # vetted = identified by Spotify OR SoundCloud.
-            # Unvetted = neither service could find the track, which often means
-            # it's a bootleg, edit with wrong metadata, or an unreleased file.
-            spotify_matched = bool(features and features.get("matched"))
-            sc_matched = bool(features and features.get("soundcloud_matched"))
-            vetted = spotify_matched or sc_matched
+            # vetted = SoundCloud could identify this track.
+            # Unvetted = SC couldn't find it (bootleg, edit with wrong metadata, etc.)
+            vetted = bool(features and features.get("soundcloud_matched"))
 
             rows_to_insert.append({
                 "track_id": track["id"],

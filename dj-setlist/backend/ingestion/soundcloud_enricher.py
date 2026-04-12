@@ -44,7 +44,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ingestion.spotify_enricher import (  # reuse the same helpers
+from ingestion._text_helpers import (
     _clean_title,
     _primary_artist,
     _extract_from_title,
