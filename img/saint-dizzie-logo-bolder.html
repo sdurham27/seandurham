@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saint Dizzie — Bolder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@200;300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0e0f14;
+      color: #ede8dc;
+      font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Entrance: scale + lift, ease-out-quint */
+    @keyframes emerge {
+      from { opacity: 0; transform: scale(0.93) translateY(12px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+
+    /* Grain overlay — full-page, fixed */
+    .grain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Split: dark left / light right */
+    .badge-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    @media (max-width: 620px) {
+      .badge-split { grid-template-columns: 1fr; min-height: unset; }
+    }
+
+    .badge-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 72px 40px;
+      min-height: 60vh;
+    }
+
+    .badge-dark  { background: #0e0f14; }
+    .badge-light { background: #ede8dc; }
+
+    .logo-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      animation: emerge 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .badge-dark  .logo-wrap { animation-delay: 0.08s; }
+    .badge-light .logo-wrap { animation-delay: 0.28s; }
+
+    .panel-label {
+      font-weight: 200;
+      font-size: 10px;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+    }
+    .panel-label-dark  { color: #ede8dc; opacity: 0.2;  }
+    .panel-label-light { color: #111318; opacity: 0.25; }
+
+    .logo-label {
+      font-weight: 200;
+      font-size: 10px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+    .logo-label-dark  { color: #ede8dc; opacity: 0.18; }
+    .logo-label-light { color: #111318; opacity: 0.22; }
+
+    /* SVG type — loaded from CSS so Google Fonts apply to inline SVG */
+    .saint-text {
+      font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+      font-weight: 300;
+      font-size: 32px;
+      letter-spacing: 14px;
+    }
+    .dizzie-text {
+      font-family: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
+      font-size: 144px;
+      letter-spacing: 1px;
+    }
+    .mark-text {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 44px;
+    }
+
+    /* Wordmark */
+    .section-wm {
+      padding: 108px 40px 120px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+      border-top: 1px solid rgba(237,232,220,0.06);
+    }
+
+    .wm-label {
+      font-weight: 200;
+      font-size: 10px;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      color: #ede8dc;
+      opacity: 0.18;
+    }
+
+    .wm-inner {
+      text-align: center;
+      opacity: 0;
+      animation: emerge 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.18s forwards;
+    }
+
+    .wm-saint {
+      display: block;
+      font-weight: 200;
+      font-size: 15px;
+      letter-spacing: 22px;
+      color: #ede8dc;
+      opacity: 0.62;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .wm-dizzie {
+      display: block;
+      font-family: 'Bebas Neue', Impact, sans-serif;
+      font-size: clamp(88px, 18vw, 182px);
+      color: #ede8dc;
+      letter-spacing: 2px;
+      line-height: 0.88;
+    }
+
+    .wm-mark {
+      display: block;
+      font-family: Georgia, serif;
+      font-size: 32px;
+      color: #ede8dc;
+      opacity: 0.32;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Grain: full-page fixed noise texture -->
+<div class="grain" aria-hidden="true">
+  <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+    <filter id="pg">
+      <feTurbulence type="fractalNoise" baseFrequency="0.72" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#pg)" opacity="0.09"/>
+  </svg>
+</div>
+
+<!-- Badge colorways: dark | light -->
+<div class="badge-split">
+
+  <div class="badge-panel badge-dark">
+    <span class="panel-label panel-label-dark">Primary</span>
+    <div class="logo-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="320" height="320">
+        <!--
+          Bolder changes vs v1:
+          - Circle: 8px bold stroke, no fill (was thin inner ring + filled)
+          - DIZZIE: 144px (was 118px)
+          - SAINT: 32px ls=14px (was 27px ls=11px)
+          - Dagger: 44px, real presence (was 19px footnote)
+          - All 5 thin rules: removed
+        -->
+        <circle cx="250" cy="250" r="222" fill="none" stroke="#ede8dc" stroke-width="8"/>
+        <text x="250" y="155" class="saint-text" text-anchor="middle" fill="#ede8dc">SAINT</text>
+        <text x="250" y="304" class="dizzie-text" text-anchor="middle" fill="#ede8dc">DIZZIE</text>
+        <text x="250" y="380" class="mark-text"   text-anchor="middle" fill="#ede8dc" opacity="0.58">†</text>
+      </svg>
+      <span class="logo-label logo-label-dark">Dark</span>
+    </div>
+  </div>
+
+  <div class="badge-panel badge-light">
+    <span class="panel-label panel-label-light">Inverse</span>
+    <div class="logo-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="320" height="320">
+        <circle cx="250" cy="250" r="222" fill="none" stroke="#111318" stroke-width="8"/>
+        <text x="250" y="155" class="saint-text" text-anchor="middle" fill="#111318">SAINT</text>
+        <text x="250" y="304" class="dizzie-text" text-anchor="middle" fill="#111318">DIZZIE</text>
+        <text x="250" y="380" class="mark-text"   text-anchor="middle" fill="#111318" opacity="0.58">†</text>
+      </svg>
+      <span class="logo-label logo-label-light">Light</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Wordmark: no badge, pure typography -->
+<section class="section-wm">
+  <span class="wm-label">Wordmark</span>
+  <div class="wm-inner">
+    <span class="wm-saint">Saint</span>
+    <span class="wm-dizzie">DIZZIE</span>
+    <span class="wm-mark">†</span>
+  </div>
+</section>
+
+</body>
+</html>
