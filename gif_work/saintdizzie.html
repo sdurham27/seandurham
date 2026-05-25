@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>saintdizzie</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Share+Tech+Mono&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan: #00f5d4;
+    --pink: #ff2d78;
+    --dark: #050a0f;
+    --mid: #0d1f2d;
+    --glow-cyan: 0 0 8px #00f5d4, 0 0 20px #00f5d488, 0 0 40px #00f5d433;
+    --glow-pink: 0 0 8px #ff2d78, 0 0 20px #ff2d7888, 0 0 40px #ff2d7833;
+  }
+
+  body {
+    background: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Share Tech Mono', monospace;
+    overflow: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.18) 2px,
+      rgba(0,0,0,0.18) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* Noise grain */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 99;
+    animation: grain 0.4s steps(1) infinite;
+  }
+
+  @keyframes grain {
+    0%  { transform: translate(0,0); }
+    10% { transform: translate(-2%, -3%); }
+    20% { transform: translate(3%, 1%); }
+    30% { transform: translate(-1%, 4%); }
+    40% { transform: translate(4%, -2%); }
+    50% { transform: translate(-3%, 2%); }
+    60% { transform: translate(2%, -4%); }
+    70% { transform: translate(-4%, 1%); }
+    80% { transform: translate(1%, 3%); }
+    90% { transform: translate(3%, -1%); }
+  }
+
+  .logo-wrap {
+    position: relative;
+    width: 520px;
+    height: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  /* Outer ring SVG */
+  .rings {
+    position: absolute;
+    inset: 0;
+    animation: ring-spin 18s linear infinite;
+  }
+
+  @keyframes ring-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .ring-pulse {
+    animation: pulse-glow 2.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    from { opacity: 0.7; }
+    to   { opacity: 1; filter: drop-shadow(0 0 6px var(--cyan)); }
+  }
+
+  .ring-pulse-pink {
+    animation: pulse-glow-pink 2.8s ease-in-out infinite alternate;
+    animation-delay: 1.4s;
+  }
+
+  @keyframes pulse-glow-pink {
+    from { opacity: 0.6; }
+    to   { opacity: 1; filter: drop-shadow(0 0 6px var(--pink)); }
+  }
+
+  /* Center card */
+  .center {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Saint label */
+  .saint {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    letter-spacing: 0.55em;
+    color: var(--cyan);
+    text-shadow: var(--glow-cyan);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    margin-left: 0.55em; /* offset for letter-spacing */
+    position: relative;
+    animation: flicker 6s steps(1) infinite;
+  }
+
+  @keyframes flicker {
+    0%, 94%, 96%, 100% { opacity: 1; }
+    95% { opacity: 0.3; }
+  }
+
+  /* DIZZIE main text */
+  .dizzie-wrap {
+    position: relative;
+  }
+
+  .dizzie {
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 88px;
+    line-height: 1;
+    color: #fff;
+    letter-spacing: -0.02em;
+    position: relative;
+    text-shadow:
+      0 0 2px #fff,
+      0 0 12px rgba(0,245,212,0.4),
+      2px 0 0 rgba(255,45,120,0.3);
+  }
+
+  /* Glitch layers */
+  .dizzie::before,
+  .dizzie::after {
+    content: 'DIZZIE';
+    position: absolute;
+    top: 0; left: 0;
+    font-family: 'Black Ops One', sans-serif;
+    font-size: 88px;
+    line-height: 1;
+  }
+
+  .dizzie::before {
+    color: var(--cyan);
+    clip-path: polygon(0 20%, 100% 20%, 100% 45%, 0 45%);
+    animation: glitch-a 4.5s steps(1) infinite;
+    opacity: 0.7;
+  }
+
+  .dizzie::after {
+    color: var(--pink);
+    clip-path: polygon(0 55%, 100% 55%, 100% 75%, 0 75%);
+    animation: glitch-b 4.5s steps(1) infinite;
+    animation-delay: 0.15s;
+    opacity: 0.7;
+  }
+
+  @keyframes glitch-a {
+    0%, 88%, 100% { transform: none; opacity: 0; }
+    90% { transform: translateX(-3px); opacity: 0.7; }
+    92% { transform: translateX(2px); opacity: 0.7; }
+    94% { transform: none; opacity: 0; }
+  }
+
+  @keyframes glitch-b {
+    0%, 88%, 100% { transform: none; opacity: 0; }
+    90% { transform: translateX(3px); opacity: 0.7; }
+    92% { transform: translateX(-1px); opacity: 0.7; }
+    94% { transform: none; opacity: 0; }
+  }
+
+  /* Bottom tagline */
+  .tagline {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--pink);
+    text-shadow: var(--glow-pink);
+    text-transform: uppercase;
+    margin-top: 6px;
+    margin-left: 0.4em;
+  }
+
+  /* Horizontal rule lines */
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 280px;
+    margin: 4px 0;
+  }
+
+  .rule-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan) 40%, var(--pink) 60%, transparent);
+    opacity: 0.6;
+  }
+
+  .rule-diamond {
+    width: 5px;
+    height: 5px;
+    background: var(--pink);
+    transform: rotate(45deg);
+    box-shadow: var(--glow-pink);
+    flex-shrink: 0;
+  }
+
+  /* Corner brackets */
+  .bracket {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0.7;
+  }
+
+  .bracket-tl { top: -10px; left: -14px; border-width: 1.5px 0 0 1.5px; }
+  .bracket-tr { top: -10px; right: -14px; border-width: 1.5px 1.5px 0 0; }
+  .bracket-bl { bottom: -12px; left: -14px; border-width: 0 0 1.5px 1.5px; }
+  .bracket-br { bottom: -12px; right: -14px; border-width: 0 1.5px 1.5px 0; }
+
+  /* BPM ticker */
+  .bpm-ticker {
+    position: absolute;
+    bottom: 120px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    opacity: 0.5;
+    font-size: 9px;
+    color: var(--cyan);
+    letter-spacing: 0.2em;
+    animation: bpm-pulse 0.468s ease-in-out infinite alternate;
+  }
+
+  @keyframes bpm-pulse {
+    from { opacity: 0.3; }
+    to   { opacity: 0.7; }
+  }
+
+  /* Crosshair decoration (subtle nod to original) */
+  .crosshair {
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    border: 1px solid rgba(0,245,212,0.08);
+    border-radius: 50%;
+  }
+
+  .crosshair::before,
+  .crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(0,245,212,0.12);
+  }
+
+  .crosshair::before {
+    width: 1px;
+    height: 40px;
+    left: 50%;
+    bottom: -20px;
+    transform: translateX(-50%);
+  }
+
+  .crosshair::after {
+    width: 40px;
+    height: 1px;
+    top: 50%;
+    right: -20px;
+    transform: translateY(-50%);
+  }
+
+  /* Hover glitch intensify */
+  .logo-wrap:hover .dizzie::before,
+  .logo-wrap:hover .dizzie::after {
+    animation: glitch-hover 0.3s steps(1) infinite;
+  }
+
+  @keyframes glitch-hover {
+    0%   { transform: translateX(-4px); opacity: 0.8; }
+    33%  { transform: translateX(4px);  opacity: 0.8; }
+    66%  { transform: translateX(-2px); opacity: 0.6; }
+    100% { transform: translateX(2px);  opacity: 0.8; }
+  }
+
+  .logo-wrap:hover .rings {
+    animation-duration: 6s;
+  }
+
+  .logo-wrap:hover .saint {
+    animation: none;
+    opacity: 1;
+    text-shadow: 0 0 12px var(--cyan), 0 0 30px var(--cyan);
+  }
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+
+  <!-- Concentric rings SVG -->
+  <svg class="rings" viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer dark fill -->
+    <circle cx="260" cy="260" r="252" fill="#07111a"/>
+
+    <!-- Ring 1 - outer cyan -->
+    <circle class="ring-pulse" cx="260" cy="260" r="248" stroke="#00f5d4" stroke-width="2" stroke-dasharray="12 6" stroke-linecap="round"/>
+    <!-- Ring 2 - pink -->
+    <circle class="ring-pulse-pink" cx="260" cy="260" r="232" stroke="#ff2d78" stroke-width="1.5"/>
+    <!-- Ring 3 - cyan -->
+    <circle class="ring-pulse" cx="260" cy="260" r="216" stroke="#00f5d4" stroke-width="2.5" stroke-dasharray="4 18"/>
+    <!-- Ring 4 - thin pink -->
+    <circle class="ring-pulse-pink" cx="260" cy="260" r="198" stroke="#ff2d78" stroke-width="1"/>
+    <!-- Ring 5 - inner solid cyan -->
+    <circle class="ring-pulse" cx="260" cy="260" r="178" stroke="#00f5d4" stroke-width="1.5" stroke-dasharray="40 8 4 8"/>
+
+    <!-- Corner tick marks at 45deg intervals on outer ring -->
+    <line x1="260" y1="10" x2="260" y2="28" stroke="#00f5d4" stroke-width="2" opacity="0.6"/>
+    <line x1="260" y1="492" x2="260" y2="510" stroke="#00f5d4" stroke-width="2" opacity="0.6"/>
+    <line x1="10" y1="260" x2="28" y2="260" stroke="#00f5d4" stroke-width="2" opacity="0.6"/>
+    <line x1="492" y1="260" x2="510" y2="260" stroke="#00f5d4" stroke-width="2" opacity="0.6"/>
+
+    <!-- Diagonal ticks -->
+    <line x1="76" y1="76" x2="88" y2="88" stroke="#ff2d78" stroke-width="1.5" opacity="0.5"/>
+    <line x1="444" y1="76" x2="432" y2="88" stroke="#ff2d78" stroke-width="1.5" opacity="0.5"/>
+    <line x1="76" y1="444" x2="88" y2="432" stroke="#ff2d78" stroke-width="1.5" opacity="0.5"/>
+    <line x1="444" y1="444" x2="432" y2="432" stroke="#ff2d78" stroke-width="1.5" opacity="0.5"/>
+  </svg>
+
+  <!-- Crosshair subtle ring -->
+  <div class="crosshair"></div>
+
+  <!-- Center content -->
+  <div class="center">
+    <div style="position:relative">
+      <div class="bracket bracket-tl"></div>
+      <div class="bracket bracket-tr"></div>
+      <div class="bracket bracket-bl"></div>
+      <div class="bracket bracket-br"></div>
+
+      <div class="saint">saint</div>
+      <div class="rule">
+        <div class="rule-line"></div>
+        <div class="rule-diamond"></div>
+        <div class="rule-line"></div>
+      </div>
+      <div class="dizzie-wrap">
+        <div class="dizzie">DIZZIE</div>
+      </div>
+      <div class="rule">
+        <div class="rule-line"></div>
+        <div class="rule-diamond"></div>
+        <div class="rule-line"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
