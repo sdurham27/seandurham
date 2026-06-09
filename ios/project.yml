@@ -1,0 +1,38 @@
+name: AmbientListen
+options:
+  bundleIdPrefix: com.seandurham
+  deploymentTarget:
+    iOS: "16.4"
+  xcodeVersion: "15"
+
+targets:
+  AmbientListen:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.4"
+    sources:
+      - path: Sources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.seandurham.ambientlisten
+        SWIFT_VERSION: "5.9"
+        IPHONEOS_DEPLOYMENT_TARGET: "16.4"
+        DEVELOPMENT_TEAM: ""
+        CODE_SIGN_STYLE: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: Sources/Info.plist
+      properties:
+        CFBundleDisplayName: AmbientListen
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        UIBackgroundModes:
+          - audio
+        NSMicrophoneUsageDescription: "Listens to your conversations to automatically capture tasks and follow-ups."
+        UILaunchStoryboardName: ""
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+        UIUserInterfaceStyle: Dark
