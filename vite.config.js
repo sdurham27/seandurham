@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Ambient Task Listener',
-        short_name: 'Listen',
+        name: 'ParaEidos',
+        short_name: 'ParaEidos',
         description: 'Listens to your day and surfaces tasks automatically',
         theme_color: '#0f0f1a',
         background_color: '#0f0f1a',

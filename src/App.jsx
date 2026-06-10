@@ -100,7 +100,7 @@ export default function App() {
     <>
       <header className="header">
         <div className="header-title">
-          Ambient<span>.</span>Listen
+          Para<span>Eidos</span>
         </div>
         <button className="icon-btn" onClick={() => setShowSettings(true)} aria-label="Settings">
           <GearIcon />

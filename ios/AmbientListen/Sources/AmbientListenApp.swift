@@ -2,7 +2,7 @@ import SwiftUI
 import AVFoundation
 
 @main
-struct AmbientListenApp: App {
+struct ParaEidosApp: App {
     @StateObject private var settings  = AppSettings()
     @StateObject private var taskStore = TaskStore()
 

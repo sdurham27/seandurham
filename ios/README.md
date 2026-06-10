@@ -1,4 +1,4 @@
-# AmbientListen — iOS App
+# ParaEidos — iOS App
 
 Native SwiftUI app that listens to conversations in the background and extracts tasks, follow-ups, and reminders using Whisper + Claude.
 

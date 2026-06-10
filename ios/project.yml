@@ -1,4 +1,4 @@
-name: AmbientListen
+name: ParaEidos
 options:
   bundleIdPrefix: com.seandurham
   deploymentTarget:
@@ -6,7 +6,7 @@ options:
   xcodeVersion: "15"
 
 targets:
-  AmbientListen:
+  ParaEidos:
     type: application
     platform: iOS
     deploymentTarget: "16.4"
@@ -14,7 +14,7 @@ targets:
       - path: AmbientListen/Sources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.seandurham.ambientlisten
+        PRODUCT_BUNDLE_IDENTIFIER: com.seandurham.paraeidos
         SWIFT_VERSION: "5.9"
         IPHONEOS_DEPLOYMENT_TARGET: "16.4"
         DEVELOPMENT_TEAM: ""
@@ -23,7 +23,7 @@ targets:
     info:
       path: AmbientListen/Sources/Info.plist
       properties:
-        CFBundleDisplayName: AmbientListen
+        CFBundleDisplayName: ParaEidos
         CFBundleShortVersionString: "1.0"
         CFBundleVersion: "1"
         UIBackgroundModes:
