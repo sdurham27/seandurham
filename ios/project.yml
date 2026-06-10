@@ -11,7 +11,7 @@ targets:
     platform: iOS
     deploymentTarget: "16.4"
     sources:
-      - path: Sources
+      - path: AmbientListen/Sources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.seandurham.ambientlisten
@@ -21,7 +21,7 @@ targets:
         CODE_SIGN_STYLE: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
     info:
-      path: Sources/Info.plist
+      path: AmbientListen/Sources/Info.plist
       properties:
         CFBundleDisplayName: AmbientListen
         CFBundleShortVersionString: "1.0"
