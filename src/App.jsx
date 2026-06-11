@@ -42,7 +42,8 @@ export default function App() {
 
     try {
       // Transcribe
-      const text = await transcribeAudio(blob, mimeType, config.openaiKey)
+      const priorContext = transcriptChunks.slice(-1)[0] ?? ''
+      const text = await transcribeAudio(blob, mimeType, config.openaiKey, priorContext)
       if (!text) return
 
       setTranscriptChunks(prev => {

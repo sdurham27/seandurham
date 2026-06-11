@@ -119,7 +119,8 @@ struct ContentView: View {
         guard settings.isConfigured else { return }
 
         do {
-            let text = try await TranscriptionService.transcribe(audioURL: url, apiKey: settings.openAIKey)
+            let priorContext = transcriptChunks.last ?? ""
+            let text = try await TranscriptionService.transcribe(audioURL: url, apiKey: settings.openAIKey, priorContext: priorContext)
             guard !text.isEmpty else { return }
 
             await MainActor.run { transcriptChunks.append(text) }
