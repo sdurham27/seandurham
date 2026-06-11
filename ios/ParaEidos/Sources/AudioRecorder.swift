@@ -45,7 +45,7 @@ class AudioRecorder: NSObject, ObservableObject {
             let session = AVAudioSession.sharedInstance()
             // .playAndRecord keeps the session alive in background with UIBackgroundModes:audio
             try session.setCategory(.playAndRecord, mode: .default,
-                                    options: [.allowBluetooth, .defaultToSpeaker, .mixWithOthers])
+                                    options: [.allowBluetoothHFP, .defaultToSpeaker, .mixWithOthers])
             try session.setActive(true)
             return true
         } catch {

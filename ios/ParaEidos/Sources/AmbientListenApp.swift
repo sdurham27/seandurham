@@ -11,7 +11,7 @@ struct ParaEidosApp: App {
         try? AVAudioSession.sharedInstance().setCategory(
             .playAndRecord,
             mode: .default,
-            options: [.allowBluetooth, .defaultToSpeaker, .mixWithOthers]
+            options: [.allowBluetoothHFP, .defaultToSpeaker, .mixWithOthers]
         )
     }
 
